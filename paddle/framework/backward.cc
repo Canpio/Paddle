@@ -304,6 +304,10 @@ std::vector<std::unique_ptr<OpDescBind>> MakeOpGrad(
 
   grad_op_descs = OpRegistry::CreateGradOpDescs(*op_desc);
 
+  if (grad_op_descs.size() == 1) {
+    grad_op_descs[0]->SetAttrMap(op_desc->GetAttrMap());
+  }
+
   std::list<std::unique_ptr<OpDescBind>> pending_fill_zeros_ops;
   for (auto& desc : grad_op_descs) {
     for (const std::string& in_name : desc->InputArgumentNames()) {
