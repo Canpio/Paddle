@@ -318,17 +318,17 @@ def open_files(filenames, thread_num, shapes, lod_levels, dtypes):
 
 
 def __create_decorated_reader__(op_type, reader, attrs):
+    # All decorated reader should be in the main_program
     var_name = unique_name(op_type)
-    startup_blk = default_startup_program().current_block()
-    startup_var = startup_blk.create_var(name=var_name)
-    startup_blk.append_op(
+    cur_block = default_main_program().current_block()
+    decorated_reader = cur_block.create_var(name=var_name)
+    cur_block.append_op(
         type=op_type,
         inputs={'UnderlyingReader': reader},
-        outputs={'Out': [startup_var]},
+        outputs={'Out': [decorated_reader]},
         attrs=attrs)
-    startup_var.persistable = True
-    return _copy_reader_var_(default_main_program().current_block(),
-                             startup_var)
+    decorated_reader.persistable = True
+    return monkey_patch_reader_methods(decorated_reader)
 
 
 def create_shuffle_reader(reader, buffer_size):
