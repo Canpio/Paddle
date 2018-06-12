@@ -172,7 +172,7 @@ void CustomReader::ReadNext(std::vector<framework::LoDTensor>* out) {
   for (size_t i = 0; i < sink_var_names_.size(); ++i) {
     const auto& tensor = detail::Ref(scope.FindVar(sink_var_names_[i]))
                              .Get<framework::LoDTensor>();
-    framework::TensorCopySync(tensor, platform::CPUPlace(), &(*out)[i]);
+    (*out)[i].ShareDataWith(tensor);
   }
 }
 
