@@ -58,7 +58,6 @@ class CreateThreadedReaderOp : public framework::OperatorBase {
     const auto& underlying_reader = scope.FindVar(Input("UnderlyingReader"))
                                         ->Get<framework::ReaderHolder>();
     out->Reset(new ThreadedReader(underlying_reader.Get()));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 

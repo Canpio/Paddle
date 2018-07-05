@@ -89,7 +89,6 @@ class CreateShuffleReaderOp : public framework::OperatorBase {
     out->Reset(
         new ShuffleReader(underlying_reader.Get(),
                           static_cast<size_t>(Attr<int>("buffer_size"))));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 

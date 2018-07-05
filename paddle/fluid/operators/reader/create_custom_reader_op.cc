@@ -64,7 +64,6 @@ class CreateCustomReaderOp : public framework::OperatorBase {
         new CustomReader(underlying_reader.Get(), *sub_block,
                          Attr<std::vector<std::string>>("source_var_names"),
                          Attr<std::vector<std::string>>("sink_var_names")));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 

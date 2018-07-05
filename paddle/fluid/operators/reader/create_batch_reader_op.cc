@@ -48,7 +48,6 @@ class CreateBatchReaderOp : public framework::OperatorBase {
                                         ->Get<framework::ReaderHolder>();
     out->Reset(
         new BatchReader(underlying_reader.Get(), Attr<int>("batch_size")));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 
