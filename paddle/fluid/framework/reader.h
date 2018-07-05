@@ -65,6 +65,8 @@ class DecoratedReader : public ReaderBase {
   virtual void ReadNextImpl(std::vector<LoDTensor>* out) = 0;
 
   std::shared_ptr<ReaderBase> reader_;
+
+  static std::mutex mutex_;
 };
 
 class RootReader : public ReaderBase {

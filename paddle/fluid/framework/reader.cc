@@ -17,6 +17,8 @@
 namespace paddle {
 namespace framework {
 
+std::mutex DecoratedReader::mutex_;
+
 ReaderBase::~ReaderBase() {}
 
 static void TraceDecorations(
@@ -45,7 +47,8 @@ void ReaderBase::ReInitAllReaders() {
 DecoratedReader::DecoratedReader(const std::shared_ptr<ReaderBase> &reader)
     : ReaderBase(), reader_(reader) {
   PADDLE_ENFORCE_NOT_NULL(reader_);
-  reader_->GetDecorations().emplace_back(this);
+  std::lock_guard<std::mutex> lock(mutex_);
+  reader_->GetDecorations().push_back(this);
 }
 
 void DecoratedReader::ReadNext(std::vector<LoDTensor> *out) {
