@@ -61,7 +61,6 @@ class CreateMultiPassReaderOp : public framework::OperatorBase {
                                         ->Get<framework::ReaderHolder>();
     int pass_num = Attr<int>("pass_num");
     out->Reset(new MultiPassReader(underlying_reader.Get(), pass_num));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 

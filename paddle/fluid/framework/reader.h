@@ -28,9 +28,7 @@ class ReaderBase {
  public:
   virtual void ReadNext(std::vector<LoDTensor>* out) = 0;
 
-  std::vector<std::weak_ptr<ReaderBase>>& GetDecorations() {
-    return decorations_;
-  }
+  std::vector<ReaderBase*>& GetDecorations() { return decorations_; }
 
   virtual std::function<void()> CloseAndGetRestartMethod(bool recursively) = 0;
 
@@ -49,7 +47,7 @@ class ReaderBase {
     is_closed_ = false;
   }
 
-  std::vector<std::weak_ptr<ReaderBase>> decorations_;
+  std::vector<ReaderBase*> decorations_;
   bool is_closed_ = false;
 };
 
@@ -60,6 +58,8 @@ class DecoratedReader : public ReaderBase {
   void ReadNext(std::vector<LoDTensor>* out) final;
 
   std::function<void()> CloseAndGetRestartMethod(bool recursively) override;
+
+  std::shared_ptr<ReaderBase>& GetUnderlying() { return reader_; }
 
  protected:
   virtual void ReadNextImpl(std::vector<LoDTensor>* out) = 0;

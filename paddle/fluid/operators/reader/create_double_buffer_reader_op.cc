@@ -121,7 +121,6 @@ class CreateDoubleBufferReaderOp : public framework::OperatorBase {
     }
 
     out->Reset(new DoubleBufferReader(underlying_reader.Get(), place));
-    underlying_reader.Get()->GetDecorations().emplace_back(out->Get());
   }
 };
 

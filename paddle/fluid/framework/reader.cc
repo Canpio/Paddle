@@ -20,22 +20,22 @@ namespace framework {
 ReaderBase::~ReaderBase() {}
 
 static void TraceDecorations(
-    std::weak_ptr<ReaderBase> reader,
-    std::vector<std::function<void()>> *restart_methods) {
-  auto reader_ptr = reader.lock();
-  PADDLE_ENFORCE_NOT_NULL(reader_ptr);
-  for (auto &d_reader : reader_ptr->GetDecorations()) {
+    ReaderBase *reader, std::vector<std::function<void()>> *restart_methods) {
+  PADDLE_ENFORCE_NOT_NULL(reader);
+  for (auto &d_reader : reader->GetDecorations()) {
     TraceDecorations(d_reader, restart_methods);
   }
-  restart_methods->emplace_back(reader_ptr->CloseAndGetRestartMethod(false));
+  restart_methods->emplace_back(reader->CloseAndGetRestartMethod(false));
 }
 
 void ReaderBase::ReInitAllReaders() {
-  std::vector<std::function<void()>> restart_methods;
-  for (auto &d_reader : decorations_) {
-    TraceDecorations(d_reader, &restart_methods);
+  ReaderBase *root_reader = this;
+  while (dynamic_cast<DecoratedReader *>(root_reader)) {
+    root_reader =
+        static_cast<DecoratedReader *>(root_reader)->GetUnderlying().get();
   }
-  restart_methods.emplace_back(CloseAndGetRestartMethod(true));
+  std::vector<std::function<void()>> restart_methods;
+  TraceDecorations(root_reader, &restart_methods);
 
   for (auto it = restart_methods.rbegin(); it != restart_methods.rend(); ++it) {
     (*it)();
@@ -45,6 +45,7 @@ void ReaderBase::ReInitAllReaders() {
 DecoratedReader::DecoratedReader(const std::shared_ptr<ReaderBase> &reader)
     : ReaderBase(), reader_(reader) {
   PADDLE_ENFORCE_NOT_NULL(reader_);
+  reader_->GetDecorations().emplace_back(this);
 }
 
 void DecoratedReader::ReadNext(std::vector<LoDTensor> *out) {
