@@ -104,6 +104,8 @@ struct EnforceNotMet : public std::exception {
 
 struct EOFException : public std::exception {
   std::string err_str_;
+  EOFException() : err_str_("") {}
+
   EOFException(const char* err_msg, const char* f, int l) {
     err_str_ = string::Sprintf("%s at [%s:%d]", err_msg, f, l);
   }

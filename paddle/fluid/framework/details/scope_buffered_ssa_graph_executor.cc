@@ -54,7 +54,17 @@ FeedFetchList ScopeBufferedSSAGraphExecutor::Run(
     }
   }
 
-  auto fetch_data = underlying_executor_->Run(fetch_tensors);
+  platform::EOFException eof_exp;
+  bool eof_catched = false;
+  FeedFetchList fetch_data;
+  try {
+    fetch_data = underlying_executor_->Run(fetch_tensors);
+  } catch (platform::EnforceNotMet ex) {
+    throw ex;
+  } catch (platform::EOFException ex) {
+    eof_exp = ex;
+    eof_catched = true;
+  }
   drop_scope_counter_ += 1;
   if (!fetch_tensors.empty() ||
       drop_scope_counter_ == strategy_.num_iteration_per_drop_scope_) {
@@ -68,6 +78,10 @@ FeedFetchList ScopeBufferedSSAGraphExecutor::Run(
           *scope->Var(details::kLocalExecScopeName)->GetMutable<Scope *>();
       scope->DeleteScope(local_scope);
     }
+  }
+  if (eof_catched) {
+    std::cerr << "HELLO" << std::endl;
+    throw eof_exp;
   }
   return fetch_data;
 }
