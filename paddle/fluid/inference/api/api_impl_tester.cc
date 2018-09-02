@@ -209,7 +209,7 @@ void MainThreadsWord2Vec(bool use_gpu) {
 }
 
 void MainThreadsImageClassification(bool use_gpu) {
-  constexpr int num_jobs = 4;  // each job run 1 batch
+  constexpr int num_jobs = 10;  // each job run 1 batch
   constexpr int batch_size = 1;
   NativeConfig config = GetConfig();
   config.use_gpu = use_gpu;
@@ -260,25 +260,26 @@ void MainThreadsImageClassification(bool use_gpu) {
   }
 }
 
-TEST(inference_api_native, word2vec_cpu) { MainWord2Vec(false /*use_gpu*/); }
-TEST(inference_api_native, word2vec_cpu_threads) {
-  MainThreadsWord2Vec(false /*use_gpu*/);
-}
-TEST(inference_api_native, image_classification_cpu) {
-  MainThreadsImageClassification(false /*use_gpu*/);
-}
-TEST(inference_api_native, image_classification_cpu_threads) {
-  MainThreadsImageClassification(false /*use_gpu*/);
-}
+// TEST(inference_api_native, word2vec_cpu) { MainWord2Vec(false /*use_gpu*/); }
+// TEST(inference_api_native, word2vec_cpu_threads) {
+//  MainThreadsWord2Vec(false /*use_gpu*/);
+//}
+// TEST(inference_api_native, image_classification_cpu) {
+//  MainThreadsImageClassification(false /*use_gpu*/);
+//}
+// TEST(inference_api_native, image_classification_cpu_threads) {
+//  MainThreadsImageClassification(false /*use_gpu*/);
+//}
 
 #ifdef PADDLE_WITH_CUDA
-TEST(inference_api_native, word2vec_gpu) { MainWord2Vec(true /*use_gpu*/); }
-TEST(inference_api_native, word2vec_gpu_threads) {
-  MainThreadsWord2Vec(true /*use_gpu*/);
-}
-TEST(inference_api_native, image_classification_gpu) {
-  MainThreadsImageClassification(true /*use_gpu*/);
-}
+
+// TEST(inference_api_native, word2vec_gpu) { MainWord2Vec(true /*use_gpu*/); }
+// TEST(inference_api_native, word2vec_gpu_threads) {
+//  MainThreadsWord2Vec(true /*use_gpu*/);
+//}
+// TEST(inference_api_native, image_classification_gpu) {
+//  MainThreadsImageClassification(true /*use_gpu*/);
+//}
 TEST(inference_api_native, image_classification_gpu_threads) {
   MainThreadsImageClassification(true /*use_gpu*/);
 }

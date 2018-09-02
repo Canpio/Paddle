@@ -85,7 +85,7 @@ bool NativePaddlePredictor::Init(
     LOG(WARNING) << "Profiler is actived, might affect the performance";
     LOG(INFO) << "You can turn off by set gflags '-profile false'";
 
-    auto tracking_device = config_.use_gpu ? platform::ProfilerState::kAll
+    auto tracking_device = config_.use_gpu ? platform::ProfilerState::kDisabled
                                            : platform::ProfilerState::kCPU;
     platform::EnableProfiler(tracking_device);
   }

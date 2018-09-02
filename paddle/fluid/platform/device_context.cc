@@ -151,25 +151,45 @@ class CudnnHolder {
       : workspace_(nullptr), workspace_len_(0), stream_(stream), place_(place) {
     PADDLE_ENFORCE(dynload::cudnnCreate(&cudnn_handle_));
     PADDLE_ENFORCE(dynload::cudnnSetStream(cudnn_handle_, *stream_));
+    workspace_len_ = 1024 * 1024 * 1024;
+    PADDLE_ENFORCE(cudaStreamSynchronize(*stream_));
+    workspace_ = paddle::memory::Alloc(place_, workspace_len_);
   }
 
   cudnnHandle_t cudnn_handle() const { return cudnn_handle_; }
 
   void RunFunc(const std::function<void(void*)>& cudnn_func,
                size_t required_workspace_len) {
-    framework::RWLockGuard lock_guard(&rw_lock_,
-                                      framework::RWLockGuard::Status::kRDLock);
+    // framework::RWLockGuard lock_guard(&rw_lock_,
+    //                                  framework::RWLockGuard::Status::kRDLock);
+    VLOG(0) << "lock Need RDLock\n";
+    rw_lock_.RDLock();
+    VLOG(0) << "lock Get RDLock\n";
     if (required_workspace_len > workspace_len_) {
-      lock_guard.UnLock();
-      lock_guard.WRLock();
-      ReallocateWorkspace(required_workspace_len);
-      lock_guard.UnLock();
-      lock_guard.RDLock();
+      PADDLE_THROW("FUCK");
+      // lock_guard.UnLock();
+      // lock_guard.WRLock();
+      // VLOG(0) << "lock Need Release RDLock\n";
+      // rw_lock_.UNLock();
+      // VLOG(0) << "lock Released RDLock and Need WRLock\n";
+      // rw_lock_.WRLock();
+      // VLOG(0) << "lock Got WRLock\n";
+      // ReallocateWorkspace(required_workspace_len);
+      // rw_lock_.UNLock();
+      // rw_lock_.RDLock();
     }
     cudnn_func(workspace_);
+    PADDLE_ENFORCE(cudaStreamSynchronize(*stream_));
+    VLOG(0) << "lock Need Release Lock\n";
+    rw_lock_.UNLock();
+    VLOG(0) << "lock Released Lock\n";
   }
 
-  ~CudnnHolder() { PADDLE_ENFORCE(dynload::cudnnDestroy(cudnn_handle_)); }
+  ~CudnnHolder() {
+    PADDLE_ENFORCE(cudaStreamSynchronize(*stream_));
+    PADDLE_ENFORCE(dynload::cudnnDestroy(cudnn_handle_));
+    paddle::memory::Free(place_, workspace_);
+  }
 
  private:
   void ReallocateWorkspace(size_t required_workspace_len) {
